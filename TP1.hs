@@ -1,4 +1,4 @@
---import qualified Data.List
+import qualified Data.List
 --import qualified Data.Array
 --import qualified Data.Bits
 
@@ -12,14 +12,21 @@ type Distance = Int
 
 type RoadMap = [(City,City,Distance)]
 
+-- this function takes a RoadMap as an argument, and returns a kist of all the cities that are in it
 cities :: RoadMap -> [City]
-cities = undefined -- modifiy this line to implement the solution, for each exercise not solved, leave the function definition like this
+cities roadmap = Data.List.nub [cit | (c1, c2, _) <- roadmap, cit <- [c1,c2]]
 
 areAdjacent :: RoadMap -> City -> City -> Bool
-areAdjacent = undefined
+areAdjacent roadmap c1 c2 = 
+    elem (c1, c2) [(c1, c2) | (c1, c2, _) <- roadmap] ||
+    elem (c2, c1) [(c1, c2) | (c1, c2, _) <- roadmap]
+
 
 distance :: RoadMap -> City -> City -> Maybe Distance
-distance = undefined
+distance [] _ _ = Nothing
+distance ((x, y, d):xs) c1 c2
+    | (x == c1 && y == c2) || (x == c2 && y == c1) = Just d
+    | otherwise = distance xs c1 c2
 
 adjacent :: RoadMap -> City -> [(City,Distance)]
 adjacent = undefined
