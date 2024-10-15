@@ -14,19 +14,20 @@ type RoadMap = [(City,City,Distance)]
 
 -- this function takes a RoadMap as an argument, and returns a kist of all the cities that are in it
 cities :: RoadMap -> [City]
-cities roadmap = Data.List.nub [cit | (c1, c2, _) <- roadmap, cit <- [c1,c2]]
+cities roadmap = Data.List.nub [cit | (c1, c2, _) <- roadmap, cit <- [c1,c2]] -- Extracts all cities from the roadmap, flattens them into a list, and removes duplicates using nub
 
+-- this function takes a RoadMap and two City as arguments, and returns True if they are adjacent, as in, there is a road with them, and false otherwise
 areAdjacent :: RoadMap -> City -> City -> Bool
 areAdjacent roadmap c1 c2 = 
-    elem (c1, c2) [(c1, c2) | (c1, c2, _) <- roadmap] ||
-    elem (c2, c1) [(c1, c2) | (c1, c2, _) <- roadmap]
+    elem (c1, c2) [(c1, c2) | (c1, c2, _) <- roadmap] || -- if (c1,c2,_) exists in roadmap return true
+    elem (c2, c1) [(c1, c2) | (c1, c2, _) <- roadmap] -- if (c2,c1,_) exists in roadmap return true
 
-
+-- this function takes a RoadMap and two City as arguments, and returns a Just value of the distance between them if they are adjacent, and Nothing if they are not
 distance :: RoadMap -> City -> City -> Maybe Distance
-distance [] _ _ = Nothing
+distance [] _ _ = Nothing -- base case
 distance ((x, y, d):xs) c1 c2
-    | (x == c1 && y == c2) || (x == c2 && y == c1) = Just d
-    | otherwise = distance xs c1 c2
+    | (x == c1 && y == c2) || (x == c2 && y == c1) = Just d -- if they are connected, return Just distance
+    | otherwise = distance xs c1 c2 -- else, use recursion
 
 adjacent :: RoadMap -> City -> [(City,Distance)]
 adjacent = undefined
