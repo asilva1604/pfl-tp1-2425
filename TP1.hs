@@ -39,19 +39,25 @@ adjacent ((c1, c2, d):es) city
     --otherwise do not append
     | otherwise = adjacent es city
 
---this function returns the sum of distances between all consecutive cities in the Path argument; if between at least 2 consecutive cities in the Path argument ther is no direct edge in the Roadmap argument, this function returns Nothing
+--this function returns the sum of distances between all consecutive cities in the Path argument; if between at least 2 consecutive cities in the Path argument there is no direct road (according to the RoadMap argument), this function returns Nothing
 pathDistance :: RoadMap -> Path -> Maybe Distance
 pathDistance _ [_] = Just 0   --empty path has 0 distance
 pathDistance _ [] = Just 0   --path with a single city has 0 distance
-pathDistance r (c1:c2:cs)
-    = do d <- distance r c1 c2      --if distance r c1 c2 returns Nothing, do will also return nothing
-         dSum <- pathDistance r (c2:cs)    --same applies as line above
-         return (d + dSum)
+pathDistance r (c1:c2:cs) =
+    do
+        d <- distance r c1 c2      --if distance r c1 c2 returns Nothing, do will also return nothing
+        d_sum <- pathDistance r (c2:cs)    --same applies as line above
+        return (d + d_sum)
     
     
-
+--this function returns a list of all cities in RoadMap argument that are connected to the maximum number of roads
 rome :: RoadMap -> [City]
-rome = undefined
+rome r =
+    let
+        cities_roads = [(city, length (adjacent r city)) | city <- cities r]   --list of (city, number of roads connected to city) tuples
+        max_roads = maximum [n_roads | (_, n_roads) <- cities_roads]    --maximum number of roads connected to a single city
+        in [city | (city, n_roads) <- cities_roads, n_roads == max_roads]
+
 
 isStronglyConnected :: RoadMap -> Bool
 isStronglyConnected = undefined
