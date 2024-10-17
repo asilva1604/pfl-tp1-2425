@@ -29,11 +29,26 @@ distance ((x, y, d):xs) c1 c2
     | (x == c1 && y == c2) || (x == c2 && y == c1) = Just d -- if they are connected, return Just distance
     | otherwise = distance xs c1 c2 -- else, use recursion
 
+--this function returns a list of (adjCity, distance) where adjCity is an adjacent city to the City argument in the Roadmap argument and distance is the Distance between the two
 adjacent :: RoadMap -> City -> [(City,Distance)]
-adjacent = undefined
+adjacent [] _ = [] --base case
+adjacent ((c1, c2, d):es) city
+    --if either city in an edge is equal to City arg, append (adjecentCity, distance)
+    | (c1 == city) = (c2, d) : adjacent es city 
+    | (c2 == city) = (c1, d) : adjacent es city
+    --otherwise do not append
+    | otherwise = adjacent es city
 
+--this function returns the sum of distances between all consecutive cities in the Path argument; if between at least 2 consecutive cities in the Path argument ther is no direct edge in the Roadmap argument, this function returns Nothing
 pathDistance :: RoadMap -> Path -> Maybe Distance
-pathDistance = undefined
+pathDistance _ [_] = Just 0   --empty path has 0 distance
+pathDistance _ [] = Just 0   --path with a single city has 0 distance
+pathDistance r (c1:c2:cs)
+    = do d <- distance r c1 c2      --if distance r c1 c2 returns Nothing, do will also return nothing
+         dSum <- pathDistance r (c2:cs)    --same applies as line above
+         return (d + dSum)
+    
+    
 
 rome :: RoadMap -> [City]
 rome = undefined
