@@ -11,6 +11,7 @@ type Path = [City]
 type Distance = Int
 
 type RoadMap = [(City,City,Distance)]
+type AdjList = [(City, [(City, Distance)])]
 
 -- this function takes a RoadMap as an argument, and returns a kist of all the cities that are in it
 cities :: RoadMap -> [City]
@@ -59,8 +60,27 @@ rome r =
         in [city | (city, n_roads) <- cities_roads, n_roads == max_roads]
 
 
+------------------------------
+--auxiliary functions
+
+--this function returns an adjacency list made from the RoadMap argument
+--toAdjMatrix :: RoadMap -> AdjList
+--toAdjMatrix roadmap = [(city, roads) | city <- cities roadmap, roads <- adjacent roadmap city]
+
+-----aux function for isStronglyConnected
+dfs :: RoadMap -> [City] -> [City] -> [City]
+dfs _ visited [] = visited
+dfs r visited (c:cs)
+    | elem c visited = dfs r visited cs
+    | otherwise = dfs r (c:visited) ([c1 | (c1, _) <- adjacent r c] ++ cs)
+------------------------------
+
 isStronglyConnected :: RoadMap -> Bool
-isStronglyConnected = undefined
+isStronglyConnected r =
+    let
+        allCities = cities r
+        dfsVisited = dfs r [] [(head allCities)]
+        in length dfsVisited == length allCities
 
 shortestPath :: RoadMap -> City -> City -> [Path]
 shortestPath = undefined
