@@ -83,7 +83,52 @@ isStronglyConnected r =
         in length dfsVisited == length allCities
 
 shortestPath :: RoadMap -> City -> City -> [Path]
-shortestPath = undefined
+shortestPath rmap a b = dijkstra (roadMapToAdjList rmap)  a b
+
+roadMapToAdjList :: RoadMap -> AdjList
+roadMapToAdjList rmap = Data.List.foldl' insertEdge [] rmap
+  where
+    insertEdge :: AdjList -> (City, City, Distance) -> AdjList
+    insertEdge adjList (c1, c2, dist) = addNeighbor (addNeighbor adjList c1 (c2, dist)) c2 (c1, dist)
+
+    addNeighbor :: AdjList -> City -> (City, Distance) -> AdjList
+    addNeighbor [] city neighbor = [(city, [neighbor])]
+    addNeighbor ((c, neighbors):rest) city neighbor
+        | c == city = (c, neighbor:neighbors) : rest
+        | otherwise = (c, neighbors) : addNeighbor rest city neighbor
+
+neighbors :: AdjList -> City -> [(City, Distance)]
+neighbors adjList city =
+    let result = lookup city adjList
+    in if result /= Nothing 
+       then extract result 
+       else []
+  where
+    extract (Just ns) = ns
+
+dijkstra :: AdjList -> City -> City -> [Path]
+dijkstra adjList start end = dijkstra' [(start, 0, [start])] [] where
+    dijkstra' [] _ = []  -- No paths found
+    dijkstra' ((current, d, path):queue) visited
+        | current == end = [path] ++ extractOtherShortest end queue  -- Found shortest path(s)
+        | current `elem` visited = dijkstra' queue visited  -- Skip if already visited
+        | otherwise = dijkstra' newQueue (current : visited)
+        where
+            neighborsList = neighbors adjList current
+            newQueue = foldl (\q (n, dist) -> addOrUpdateQueue n (d + dist) (path ++ [n]) q) queue neighborsList
+
+addOrUpdateQueue :: City -> Distance -> Path -> [(City, Distance, Path)] -> [(City, Distance, Path)]
+addOrUpdateQueue city newDist newPath queue =
+    case Data.List.find (\(c, _, _) -> c == city) queue of
+        Nothing -> (city, newDist, newPath) : queue
+        Just (_, oldDist, oldPath) ->
+            if newDist < oldDist then (city, newDist, newPath) : Data.List.delete (city, oldDist, oldPath) queue
+            else if newDist == oldDist then (city, newDist, newPath) : queue  -- Keep all equal-distance paths
+            else queue
+
+-- Extract additional shortest paths to the end city
+extractOtherShortest :: City -> [(City, Distance, Path)] -> [Path]
+extractOtherShortest city queue = [path | (c, _, path) <- queue, c == city]
 
 travelSales :: RoadMap -> Path
 travelSales = undefined
