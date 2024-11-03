@@ -225,12 +225,6 @@ solveTSP cities adjList dist =
         Nothing -> Nothing
         Just (_, path) -> Just $ map (cities !!) path
 
--- Example usage
-main :: IO ()
-main = do
-  print $ travelSales gTest1
-
-
 tspBruteForce :: RoadMap -> Path
 tspBruteForce = undefined -- only for groups of 3 people; groups of 2 people: do not edit this function
 
