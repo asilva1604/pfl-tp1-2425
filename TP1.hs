@@ -148,10 +148,10 @@ travelSales roadMap =
         cityToIndex = Data.Array.listArray (0, length cities - 1) cities
         indexToCity = Data.Array.listArray (0, length cities - 1) [0..length cities - 1]
         
-        -- Create adjacency matrix with distances
+        --create adjacency matrix with distances
         adjList = createAdjList cities roadMap
         
-        -- Create a distance lookup function
+        --create a distance lookup function
         distFunc :: Int -> Int -> Maybe Distance
         distFunc i j = 
             let city1 = cityToIndex Data.Array.! i
@@ -188,15 +188,15 @@ solveTSP cities adjList dist =
     let n = length cities
         allVisited = (1 `Data.Bits.shiftL` n) - 1
         
-        -- Create arrays for memoization
+        --create arrays for memoization
         dpArray = Data.Array.listArray ((0, 0), (n-1, allVisited)) 
                     [(i, mask) | i <- [0..n-1], mask <- [0..allVisited]]
         
-        -- Initialize dp array with computed values
+        --initialize dp array with computed values
         dp = Data.Array.array ((0, 0), (n-1, allVisited))
                     [((i, mask), tsp i mask) | (i, mask) <- Data.Array.range ((0, 0), (n-1, allVisited))]
         
-        -- Main DP function
+        --main DP function
         tsp :: Int -> Int -> Maybe (Distance, [Int])
         tsp pos mask
             -- Base case: all cities visited
@@ -206,7 +206,7 @@ solveTSP cities adjList dist =
                     Just d -> Just (d, [0])
             | otherwise = findMin pos mask
         
-        -- Find minimum cost path from current position
+        --find minimum cost path from current position
         findMin :: Int -> Int -> Maybe (Distance, [Int])
         findMin pos mask = foldr tryPath Nothing [0..n-1]
             where
@@ -223,7 +223,7 @@ solveTSP cities adjList dist =
                                             else Just (accDist, accPath)
                             _ -> acc
         
-        -- Get the initial state result
+        --get the initial state result
         result = dp Data.Array.! (0, 1)
     in case result of
         Nothing -> Nothing
