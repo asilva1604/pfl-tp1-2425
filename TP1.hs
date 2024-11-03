@@ -1,6 +1,6 @@
 import qualified Data.List
---import qualified Data.Array
---import qualified Data.Bits
+import qualified Data.Array
+import qualified Data.Bits
 
 -- PFL 2024/2025 Practical assignment 1
 
@@ -12,6 +12,8 @@ type Distance = Int
 
 type RoadMap = [(City,City,Distance)]
 type AdjList = [(City, [(City, Distance)])]
+data AdjPointers = Place City [(AdjPointers, Distance)] deriving (Show)
+
 
 -- this function takes a RoadMap as an argument, and returns a kist of all the cities that are in it
 cities :: RoadMap -> [City]
@@ -131,7 +133,103 @@ extractOtherShortest :: City -> [(City, Distance, Path)] -> [Path]
 extractOtherShortest city queue = [path | (c, _, path) <- queue, c == city]
 
 travelSales :: RoadMap -> Path
-travelSales = undefined
+travelSales roadMap = 
+    if null cities || length cities < 2 then []
+    else if not (isConnected cities adjList) then []
+    else case solveTSP cities adjList distFunc of
+            Nothing -> []
+            Just path -> path
+    where
+        cities = Data.List.nub $ concatMap (\(c1, c2, _) -> [c1, c2]) roadMap
+        cityToIndex = Data.Array.listArray (0, length cities - 1) cities
+        indexToCity = Data.Array.listArray (0, length cities - 1) [0..length cities - 1]
+        
+        -- Create adjacency matrix with distances
+        adjList = createAdjList cities roadMap
+        
+        -- Create a distance lookup function
+        distFunc :: Int -> Int -> Maybe Distance
+        distFunc i j = 
+            let city1 = cityToIndex Data.Array.! i
+                city2 = cityToIndex Data.Array.! j
+            in lookup city2 =<< lookup city1 adjList
+
+-- Convert RoadMap to adjacency list representation
+createAdjList :: [City] -> RoadMap -> [(City, [(City, Distance)])]
+createAdjList cities roadMap = 
+    [(city, neighborList city) | city <- cities]
+    where
+        neighborList city = 
+            [(c2, d) | (c1, c2, d) <- roadMap, c1 == city] ++
+            [(c1, d) | (c1, c2, d) <- roadMap, c2 == city]
+
+-- Check if graph is connected using DFS
+isConnected :: [City] -> [(City, [(City, Distance)])] -> Bool
+isConnected [] _ = True
+isConnected (start:rest) adjList = length reachable == length allCities
+    where
+        allCities = start:rest
+        reachable = dfs [start] [start]
+        
+        dfs :: [City] -> [City] -> [City]
+        dfs [] visited = visited
+        dfs (c:cs) visited = 
+            let neighbors = map fst $ maybe [] id $ lookup c adjList
+                newNeighbors = filter (`notElem` visited) neighbors
+            in dfs (newNeighbors ++ cs) (visited ++ newNeighbors)
+
+-- Solve TSP using dynamic programming with bitmask
+solveTSP :: [City] -> [(City, [(City, Distance)])] -> (Int -> Int -> Maybe Distance) -> Maybe Path
+solveTSP cities adjList dist = 
+    let n = length cities
+        allVisited = (1 `Data.Bits.shiftL` n) - 1
+        
+        -- Create arrays for memoization
+        dpArray = Data.Array.listArray ((0, 0), (n-1, allVisited)) 
+                    [(i, mask) | i <- [0..n-1], mask <- [0..allVisited]]
+        
+        -- Initialize dp array with computed values
+        dp = Data.Array.array ((0, 0), (n-1, allVisited))
+                    [((i, mask), tsp i mask) | (i, mask) <- Data.Array.range ((0, 0), (n-1, allVisited))]
+        
+        -- Main DP function
+        tsp :: Int -> Int -> Maybe (Distance, [Int])
+        tsp pos mask
+            -- Base case: all cities visited
+            | mask == allVisited = 
+                case dist pos 0 of
+                    Nothing -> Nothing
+                    Just d -> Just (d, [0])
+            | otherwise = findMin pos mask
+        
+        -- Find minimum cost path from current position
+        findMin :: Int -> Int -> Maybe (Distance, [Int])
+        findMin pos mask = foldr tryPath Nothing [0..n-1]
+            where
+                tryPath i acc
+                    | Data.Bits.testBit mask i = acc
+                    | otherwise = 
+                        case (dist pos i, dp Data.Array.! (i, mask `Data.Bits.setBit` i)) of
+                            (Just d, Just (restDist, restPath)) ->
+                                case acc of
+                                    Nothing -> Just (d + restDist, i:restPath)
+                                    Just (accDist, accPath) ->
+                                        if d + restDist < accDist
+                                            then Just (d + restDist, i:restPath)
+                                            else Just (accDist, accPath)
+                            _ -> acc
+        
+        -- Get the initial state result
+        result = dp Data.Array.! (0, 1)
+    in case result of
+        Nothing -> Nothing
+        Just (_, path) -> Just $ map (cities !!) path
+
+-- Example usage
+main :: IO ()
+main = do
+  print $ travelSales gTest1
+
 
 tspBruteForce :: RoadMap -> Path
 tspBruteForce = undefined -- only for groups of 3 people; groups of 2 people: do not edit this function
