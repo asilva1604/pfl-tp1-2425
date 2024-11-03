@@ -2,9 +2,9 @@
 
 ## Group Members
 - Alexandre Silva: 50%
-    - Tasks:
+    - Tasks: cities, areAdjacent, distance, shortestPath, (cooperated) travelSales.
 - Eduardo Baltazar: 50%
-    - Tasks:
+    - Tasks: adjacent, pathDistance, rome, isStronglyConnected, (cooperated) travelSales.
 ## Shortest Path Function
 ### Implementation
 The shortestPath function was implemented using Dijkstra's algorithm.
