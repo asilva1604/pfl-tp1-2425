@@ -36,17 +36,15 @@ The travelSales function solves the Traveling Salesman Problem (TSP) to find the
 ### Explanation
 - Auxiliary Data Structures:
     - AdjList: Similar to the shortestPath function, the roadmap is converted to an adjacency list representation.
-    - Distance Function: A function to calculate the distance between two cities, used by the TSP solver.
 - Algorithm:
-    - TSP Solver: The solveTSP function is used to solve the TSP. It finds the shortest path that visits all cities exactly once and returns to the starting city. The algorithm ensures that all cities are connected and uses the adjacency list and distance function to compute the optimal path.
   - Dynamic Programming with Bitmasking:
     - The algorithm uses dynamic programming to store the shortest paths for subsets of cities.
     - Bitmasking is used to represent subsets of cities. Each bit in the bitmask represents whether a city is included in the subset.
   - State Representation
-    - The state is represented by two variables: pos (represents the current city) and mak (is a bitmask where each bit indicated whether a city has been visited)
+    - The state is represented by two variables: pos (represents the current city) and mask (is a bitmask where each bit indicated whether a city has been visited)
   - Transition
     - From each state (pos, mask), the algorithm considers moving to an unvisited city i
-    - The trnsition is only valid if city i has not been visited (check using bitmask)
+    - The transition is only valid if city i has not been visited (check using bitmask)
   - Recurrence Relation
     - The algorithm uses a recurrence relation to compute the minimum distance for each state.
     - The distance for state (pos, mask) is the minimum of the distances obtained by moving to each unvisited city i and adding the distance from pos to i.
